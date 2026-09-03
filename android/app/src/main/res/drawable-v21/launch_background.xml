@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/moodful_splash_base" />
+    <item>
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/moodful_splash_background" />
+    </item>
+    <item
+        android:gravity="bottom|center_horizontal"
+        android:bottom="54dp"
+        android:width="240dp"
+        android:height="8dp"
+        android:drawable="@drawable/launch_progress_track" />
+    <item
+        android:gravity="bottom|center_horizontal"
+        android:bottom="54dp"
+        android:width="102dp"
+        android:height="8dp"
+        android:drawable="@drawable/launch_progress_fill" />
+</layer-list>
