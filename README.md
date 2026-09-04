@@ -2,6 +2,10 @@
 
 A new Flutter project.
 
+## iOS 发布准备
+
+发布 iOS 包前请先完成 [IOS_RELEASE_TODO.md](IOS_RELEASE_TODO.md)。其中包含当前工程的阻塞项、外部 Apple 配置、资源替换、隐私合规和最终构建命令。
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.

@@ -14,6 +14,7 @@ import 'package:recordmood/common/constants/app_storage_keys.dart';
 import 'package:recordmood/models/custom_trigger.dart';
 import 'package:recordmood/models/mood_record.dart';
 import 'package:recordmood/pages/check_in/check_in_controller.dart';
+import 'package:recordmood/pages/main/main_shell_controller.dart';
 import 'package:recordmood/pages/main/main_shell_page.dart';
 import 'package:recordmood/pages/startup/startup_page.dart';
 import 'package:recordmood/services/local_storage_service.dart';
@@ -107,6 +108,40 @@ void main() {
 
     expect(find.byType(StartupPage), findsNothing);
     expect(find.byType(MainShellPage), findsOneWidget);
+  });
+
+  testWidgets('startup shows the app name and tagline at 360x973', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const ui.Size(360, 973));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final storageCompleter = Completer<LocalStorageService>();
+
+    await tester.pumpWidget(
+      MoodfulBootstrapApp(
+        storageLoader: () => storageCompleter.future,
+        minimumSplashDuration: Duration.zero,
+      ),
+    );
+    await tester.pump();
+
+    final appName = find.byKey(const ValueKey('startup-app-name'));
+    final tagline = find.byKey(const ValueKey('startup-tagline'));
+    expect(find.text('Mood Signals'), findsOneWidget);
+    expect(
+      find.text('Understand your emotions.\nNurture your wellbeing.'),
+      findsOneWidget,
+    );
+    expect(tester.getRect(appName).left, greaterThanOrEqualTo(0));
+    expect(tester.getRect(appName).right, lessThanOrEqualTo(360));
+    expect(
+      tester.getTopLeft(tagline).dy,
+      greaterThan(tester.getBottomLeft(appName).dy),
+    );
+    expect(tester.takeException(), isNull);
+
+    storageCompleter.complete(LocalStorageService.inMemory());
+    await tester.pumpAndSettle();
   });
 
   testWidgets('startup blocks the system back button', (
@@ -204,6 +239,39 @@ void main() {
     await tester.pump();
     expect(find.byType(StartupPage), findsNothing);
     expect(find.text('Rate App'), findsOneWidget);
+  });
+
+  testWidgets('cross-day hot start returns to the check-in form', (
+    WidgetTester tester,
+  ) async {
+    var now = DateTime(2026, 9, 3, 23, 59, 58);
+    await tester.pumpWidget(
+      await _createApp(
+        initialValues: {AppStorageKeys.onboardingSeen: true},
+        now: () => now,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Rate App'), findsOneWidget);
+
+    _sendAppToBackground(tester);
+    now = DateTime(2026, 9, 4, 0, 0, 2);
+    _resumeApp(tester);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(StartupPage), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(StartupPage), findsNothing);
+    expect(find.text('Today Check-in'), findsOneWidget);
+    expect(Get.find<MainShellController>().currentIndex.value, 0);
   });
 
   testWidgets('hot start skips startup before three seconds', (
@@ -329,7 +397,7 @@ void main() {
     expect(subtitle.style?.fontSize, 12);
   });
 
-  testWidgets('check-in save button stays fixed while form scrolls', (
+  testWidgets('check-in save button scrolls with the form', (
     WidgetTester tester,
   ) async {
     await tester.binding.setSurfaceSize(const ui.Size(360, 600));
@@ -349,8 +417,32 @@ void main() {
     await tester.drag(scroll, const Offset(0, -160));
     await tester.pumpAndSettle();
 
-    expect(tester.getTopLeft(saveButton).dy, closeTo(saveButtonY, 0.5));
+    expect(tester.getTopLeft(saveButton).dy, lessThan(saveButtonY));
     expect(tester.getTopLeft(contextTitle).dy, lessThan(contextTitleY));
+  });
+
+  testWidgets('check-in save button remains in the form with keyboard open', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const ui.Size(360, 760));
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(() {
+      tester.binding.setSurfaceSize(null);
+      tester.view.resetViewInsets();
+    });
+
+    await tester.pumpWidget(
+      await _createApp(initialValues: {AppStorageKeys.onboardingSeen: true}),
+    );
+    await tester.pumpAndSettle();
+
+    final saveButton = find.byKey(const ValueKey('check-in-save-button'));
+    final contextField = find.byType(TextField);
+    expect(saveButton, findsOneWidget);
+    expect(
+      tester.getTopLeft(saveButton).dy,
+      greaterThan(tester.getBottomLeft(contextField).dy),
+    );
   });
 
   testWidgets('check-in triggers scroll inside the section after six items', (
@@ -507,7 +599,10 @@ void main() {
     await tester.pumpWidget(await _createApp(storage: storage));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Save check-in'));
+    final saveButton = find.byKey(const ValueKey('check-in-save-button'));
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 

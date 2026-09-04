@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'app_design.dart';
 import 'app_routes.dart';
 import 'app_theme.dart';
+import '../models/mood_record.dart';
+import '../pages/main/main_shell_controller.dart';
 import '../pages/startup/startup_page.dart';
 import '../services/local_storage_service.dart';
 
@@ -30,6 +32,7 @@ class MoodfulApp extends StatefulWidget {
 class _MoodfulAppState extends State<MoodfulApp> with WidgetsBindingObserver {
   DateTime? _backgroundedAt;
   bool _isShowingHotStartSplash = false;
+  bool _openCheckInAfterSplash = false;
 
   DateTime get _now => widget.now?.call() ?? DateTime.now();
 
@@ -59,14 +62,24 @@ class _MoodfulAppState extends State<MoodfulApp> with WidgetsBindingObserver {
     }
 
     final backgroundedAt = _backgroundedAt;
+    final resumedAt = _now;
     _backgroundedAt = null;
-    if (backgroundedAt != null &&
-        _now.difference(backgroundedAt) >= widget.hotStartThreshold) {
-      _showHotStartSplash();
+    if (backgroundedAt == null) {
+      return;
+    }
+
+    final crossedDay =
+        MoodRecord.dateKeyFor(backgroundedAt) !=
+        MoodRecord.dateKeyFor(resumedAt);
+    if (resumedAt.difference(backgroundedAt) >= widget.hotStartThreshold) {
+      _showHotStartSplash(openCheckInAfterSplash: crossedDay);
+    } else if (crossedDay) {
+      _openTodayCheckIn();
     }
   }
 
-  void _showHotStartSplash() {
+  void _showHotStartSplash({bool openCheckInAfterSplash = false}) {
+    _openCheckInAfterSplash = _openCheckInAfterSplash || openCheckInAfterSplash;
     if (_isShowingHotStartSplash) {
       return;
     }
@@ -92,6 +105,26 @@ class _MoodfulAppState extends State<MoodfulApp> with WidgetsBindingObserver {
         navigator.removeRoute(route);
       }
       _isShowingHotStartSplash = false;
+      if (_openCheckInAfterSplash) {
+        _openCheckInAfterSplash = false;
+        _openTodayCheckIn();
+      }
+    });
+  }
+
+  void _openTodayCheckIn() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = Get.key.currentState;
+      if (!mounted || navigator == null) {
+        return;
+      }
+
+      navigator.popUntil(
+        (route) => route.settings.name == AppRoutes.main || route.isFirst,
+      );
+      if (Get.isRegistered<MainShellController>()) {
+        Get.find<MainShellController>().selectTab(0);
+      }
     });
   }
 
@@ -112,7 +145,7 @@ class _MoodfulAppState extends State<MoodfulApp> with WidgetsBindingObserver {
           ),
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Moodful',
+            title: 'Mood Signals',
             theme: AppTheme.light,
             initialRoute: widget.storage.hasSeenOnboarding
                 ? AppRoutes.main

@@ -30,6 +30,12 @@ class StartupPage extends StatelessWidget {
               filterQuality: FilterQuality.high,
             ),
             Positioned(
+              top: screenSize.height * 0.45,
+              left: 28.r,
+              right: 28.r,
+              child: const _StartupBrand(),
+            ),
+            Positioned(
               left: (screenSize.width - barWidth) / 2,
               bottom: bottom,
               width: barWidth,
@@ -39,6 +45,48 @@ class StartupPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StartupBrand extends StatelessWidget {
+  const _StartupBrand();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'Mood Signals',
+            key: const ValueKey('startup-app-name'),
+            maxLines: 1,
+            style: const TextStyle(
+              color: Color(0xFFF56FA9),
+              fontFamily: 'serif',
+              fontSize: 40,
+              fontWeight: FontWeight.w400,
+              height: 1.05,
+              letterSpacing: 0,
+            ),
+          ),
+        ),
+        SizedBox(height: 9.r),
+        const Text(
+          'Understand your emotions.\nNurture your wellbeing.',
+          key: ValueKey('startup-tagline'),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFFC76F99),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            height: 1.45,
+            letterSpacing: 0,
+          ),
+        ),
+      ],
     );
   }
 }

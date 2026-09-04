@@ -40,6 +40,11 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
   @override
   Widget build(BuildContext context) {
     final mood = _moods[_record.moodIndex.clamp(0, _moods.length - 1)];
+    final triggerRows = _record.triggers.isEmpty
+        ? 1
+        : (_record.triggers.length + 1) ~/ 2;
+    final triggerSectionHeight =
+        65.r + triggerRows * 30.r + (triggerRows - 1) * 7.r;
 
     return Scaffold(
       body: AppBackground(
@@ -78,8 +83,11 @@ class _HistoryDetailPageState extends State<HistoryDetailPage> {
                         _RecordSummary(record: _record, mood: mood),
                         SizedBox(height: 13.r),
                         CheckInSection(
+                          key: const ValueKey(
+                            'history-detail-triggers-section',
+                          ),
                           title: 'Triggers map',
-                          height: 95.r,
+                          height: triggerSectionHeight,
                           child: _TriggerWrap(triggers: _record.triggers),
                         ),
                         SizedBox(height: 13.r),
@@ -273,26 +281,42 @@ class _TriggerWrap extends StatelessWidget {
         ),
       );
     }
-    return Wrap(
-      spacing: 7.r,
-      runSpacing: 7.r,
-      children: [
-        for (final trigger in triggers) _DetailTriggerChip(label: trigger),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = 7.r;
+        final chipWidth = (constraints.maxWidth - spacing) / 2;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 7.r,
+          children: [
+            for (final trigger in triggers)
+              _DetailTriggerChip(
+                key: ValueKey('history-detail-trigger-$trigger'),
+                label: trigger,
+                width: chipWidth,
+              ),
+          ],
+        );
+      },
     );
   }
 }
 
 class _DetailTriggerChip extends StatelessWidget {
-  const _DetailTriggerChip({required this.label});
+  const _DetailTriggerChip({
+    required this.label,
+    required this.width,
+    super.key,
+  });
 
   final String label;
+  final double width;
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: width,
       height: 30.r,
-      constraints: BoxConstraints(minWidth: 73.r, maxWidth: 110.r),
       padding: EdgeInsets.symmetric(horizontal: 14.r),
       alignment: Alignment.center,
       decoration: BoxDecoration(

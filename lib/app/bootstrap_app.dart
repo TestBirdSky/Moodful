@@ -92,7 +92,7 @@ class _MoodfulBootstrapAppState extends State<MoodfulBootstrapApp> {
           ),
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Moodful',
+            title: 'Mood Signals',
             theme: AppTheme.light,
             home: const StartupPage(),
           ),

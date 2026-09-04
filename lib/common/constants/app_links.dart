@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 final class AppLinks {
   const AppLinks._();
 
-  // TODO: Replace these test URLs with production links in one place.
+  // TODO(iOS release): Replace all placeholder URLs with the production
+  // App Store, privacy policy, and terms links before TestFlight upload.
   static const String androidDownloadUrl =
       'https://play.google.com/store/apps/details?id=com.example.recordmood';
   static const String iosDownloadUrl =

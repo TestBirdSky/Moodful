@@ -383,6 +383,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				/* TODO(iOS release): Replace the placeholder Bundle ID with the
+				   registered production App ID before signing. */
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.recordmood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
@@ -564,6 +566,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				/* TODO(iOS release): Keep the production Bundle ID consistent
+				   across Debug, Profile, and Release configurations. */
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.recordmood;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";

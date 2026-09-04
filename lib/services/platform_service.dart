@@ -12,6 +12,8 @@ class PlatformService {
 
   Future<void> moveAppToBackground() async {
     if (defaultTargetPlatform != TargetPlatform.android) {
+      // TODO(iOS release): Decide whether the Close App action should be
+      // hidden on iOS instead of attempting to close the application.
       await SystemNavigator.pop();
       return;
     }
@@ -26,7 +28,7 @@ class PlatformService {
   Future<void> shareApp() {
     return Share.share(
       AppLinks.downloadUrlForPlatform(defaultTargetPlatform),
-      subject: 'Moodful',
+      subject: 'Mood Signals',
     );
   }
 

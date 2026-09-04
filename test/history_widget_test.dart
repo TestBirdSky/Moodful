@@ -225,4 +225,47 @@ void main() {
       findsNothing,
     );
   });
+
+  testWidgets('history detail shows every trigger without clipping', (
+    WidgetTester tester,
+  ) async {
+    final record = MoodRecord(
+      dateKey: MoodRecord.dateKeyFor(DateTime.now()),
+      moodIndex: 4,
+      energy: 'Low',
+      triggers: const ['Sleep', 'Work', 'Family', 'Weather', 'Health', 'Money'],
+      context: '',
+    );
+    SharedPreferences.setMockInitialValues({
+      AppStorageKeys.onboardingSeen: true,
+    });
+    final preferences = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      MoodfulApp(
+        storage: LocalStorageService(
+          preferences,
+          database: InMemoryMoodDatabase(records: [record]),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('History').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ValueKey('history-record-${record.dateKey}')));
+    await tester.pumpAndSettle();
+
+    final section = find.byKey(
+      const ValueKey('history-detail-triggers-section'),
+    );
+    final sectionRect = tester.getRect(section);
+    for (final trigger in record.triggers) {
+      final chip = find.byKey(ValueKey('history-detail-trigger-$trigger'));
+      expect(chip, findsOneWidget);
+      final chipRect = tester.getRect(chip);
+      expect(chipRect.top, greaterThan(sectionRect.top));
+      expect(chipRect.bottom, lessThanOrEqualTo(sectionRect.bottom));
+    }
+    expect(tester.takeException(), isNull);
+  });
 }
