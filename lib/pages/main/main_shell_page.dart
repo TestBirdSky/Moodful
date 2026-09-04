@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../common/widgets/app_background.dart';
 import '../../common/widgets/moodful_bottom_navigation_bar.dart';
+import '../../services/platform_service.dart';
 import '../board/board_page.dart';
 import '../check_in/check_in_page.dart';
 import '../history/history_page.dart';
@@ -12,6 +13,8 @@ import 'main_shell_controller.dart';
 
 class MainShellPage extends GetView<MainShellController> {
   const MainShellPage({super.key});
+
+  static final _platformService = PlatformService();
 
   static const _pages = [
     CheckInPage(),
@@ -23,24 +26,32 @@ class MainShellPage extends GetView<MainShellController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: AppBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Obx(
-            () => IndexedStack(
-              index: controller.currentIndex.value,
-              children: _pages,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          _platformService.moveAppToBackground();
+        }
+      },
+      child: Scaffold(
+        extendBody: true,
+        body: AppBackground(
+          child: SafeArea(
+            bottom: false,
+            child: Obx(
+              () => IndexedStack(
+                index: controller.currentIndex.value,
+                children: _pages,
+              ),
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: Obx(
-        () => MoodfulBottomNavigationBar(
-          selectedIndex: controller.currentIndex.value,
-          items: MoodfulBottomNavigationBar.itemsForApp,
-          onItemSelected: controller.selectTab,
+        bottomNavigationBar: Obx(
+          () => MoodfulBottomNavigationBar(
+            selectedIndex: controller.currentIndex.value,
+            items: MoodfulBottomNavigationBar.itemsForApp,
+            onItemSelected: controller.selectTab,
+          ),
         ),
       ),
     );

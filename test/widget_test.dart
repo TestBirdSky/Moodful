@@ -96,6 +96,11 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('startup-progress-fill')), findsOneWidget);
+    final progressRect = tester.getRect(
+      find.byKey(const ValueKey('startup-progress-indicator')),
+    );
+    expect(progressRect.width, greaterThan(0));
+    expect(progressRect.bottom, lessThan(760));
 
     storageCompleter.complete(LocalStorageService(preferences));
     await tester.pumpAndSettle();

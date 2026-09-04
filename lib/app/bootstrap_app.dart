@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -36,7 +38,7 @@ class _MoodfulBootstrapAppState extends State<MoodfulBootstrapApp> {
   Future<void> _initialize() async {
     final results = await Future.wait<dynamic>([
       _loadStorage(),
-      _waitMinimumSplashDuration(),
+      _waitMinimumSplashDurationAfterFirstFrame(),
     ]);
 
     if (!mounted) {
@@ -54,11 +56,18 @@ class _MoodfulBootstrapAppState extends State<MoodfulBootstrapApp> {
     }
   }
 
-  Future<void> _waitMinimumSplashDuration() {
+  Future<void> _waitMinimumSplashDurationAfterFirstFrame() async {
     if (widget.minimumSplashDuration <= Duration.zero) {
-      return Future<void>.value();
+      await WidgetsBinding.instance.endOfFrame;
+      return;
     }
-    return Future<void>.delayed(widget.minimumSplashDuration);
+
+    final firstFrame = Completer<void>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      firstFrame.complete();
+    });
+    await firstFrame.future;
+    await Future<void>.delayed(widget.minimumSplashDuration);
   }
 
   @override

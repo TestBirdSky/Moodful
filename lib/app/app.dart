@@ -48,7 +48,8 @@ class _MoodfulAppState extends State<MoodfulApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.hidden ||
-        state == AppLifecycleState.paused) {
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       _backgroundedAt ??= _now;
       return;
     }
